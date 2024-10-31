@@ -1,14 +1,52 @@
 const express = require("express");
-const morgan = require('morgan')
+const morgan = require("morgan");
+const mongoose = require("mongoose");
+const Blog = require("./models/blog");
 
 const app = express();
 
+const dbURI =
+  "mongodb+srv://admin:admin@cluster0.ajqid.mongodb.net/node?retryWrites=true&w=majority&appName=Cluster0";
+mongoose
+  .connect(dbURI)
+  .then((result) => {
+    app.listen(3000);
+  })
+  .catch((err) => {
+    console.log("err", err);
+  });
+
 app.set("view engine", "ejs");
 
-app.listen(3000);
+app.use(express.static("public"));
+app.use(morgan("dev"));
 
-app.use(express.static('public'))
-app.use(morgan('dev'))
+app.get("/add-blog", (req, res) => {
+  const blog = new Blog({
+    title: "new blog 2",
+    snippet: "about my new blog",
+    body: "main content of blog",
+  });
+
+  blog
+    .save()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => console.log(err));
+});
+
+app.get("/all-blog", (req, res) => {
+  Blog.find()
+    .then((result) => res.send(result))
+    .catch((err) => console.log(err));
+});
+
+app.get("/single-blog", (req, res) => {
+  Blog.findById("6723af09ad4d5216ab806382")
+    .then((result) => res.send(result))
+    .catch((err) => console.log(err));
+});
 
 app.get("/", (req, res) => {
   // res.send('<p>home page</p>')
